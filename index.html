@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>Évaluateur ATS de CV</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="Accueil de l’évaluateur ATS de CV">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span>ClearCV <span class="brand-divider">/</span> Évaluateur ATS</span>
+      </a>
+      <span class="header-note"><span class="status-dot"></span> Analyse privée dans votre navigateur</span>
+    </header>
+
+    <main>
+      <section class="intro">
+        <p class="eyebrow">Une candidature convaincante commence ici</p>
+        <h1>Votre CV est-il prêt pour ce poste&nbsp;?</h1>
+        <p>Comparez votre CV à une offre d’emploi et obtenez un score de compatibilité ATS. Vos données restent dans ce navigateur.</p>
+      </section>
+
+      <form id="evaluator-form" novalidate>
+        <section class="panel input-panel" aria-labelledby="materials-title">
+          <div class="section-heading">
+            <div>
+              <p class="step-label">01 <span>·</span> Vos informations</p>
+              <h2 id="materials-title">Le poste et votre CV</h2>
+            </div>
+            <span class="section-icon" aria-hidden="true">✳</span>
+          </div>
+
+          <label class="field-label" for="candidate-name">Nom du candidat</label>
+          <input id="candidate-name" name="candidate-name" type="text" placeholder="Ex. Alex Martin" autocomplete="name">
+
+          <label class="field-label" for="job-title">Intitulé exact du poste <span>Utilisé pour vérifier la correspondance</span></label>
+          <input id="job-title" name="job-title" type="text" placeholder="Ex. Chargé de communication" autocomplete="off">
+
+          <div class="text-grid">
+            <div class="text-field">
+              <label class="field-label" for="job-description">Description du poste <span>Les mots-clés sont détectés automatiquement</span></label>
+              <textarea id="job-description" name="job-description" rows="10" placeholder="Collez ici la description du poste..."></textarea>
+              <span class="field-hint">Les mots-clés seront comparés à votre CV et les correspondances seront affichées.</span>
+            </div>
+            <div class="text-field">
+              <label class="field-label" for="cv-file">Importer votre CV <span>Sélectionnez un fichier PDF</span></label>
+              <input id="cv-file" name="cv-file" class="file-input" type="file" accept=".pdf,application/pdf" required>
+              <p id="file-status" class="field-hint file-status" role="status" aria-live="polite">Importez un PDF contenant du texte. Les PDF numérisés en image peuvent être illisibles.</p>
+              <span class="field-hint">Le fichier reste dans votre navigateur. La mise en page s’évalue avec la liste de contrôle.</span>
+            </div>
+          </div>
+          <p id="form-error" class="form-error" role="alert" hidden></p>
+        </section>
+
+        <section class="panel languages-panel" aria-labelledby="languages-title">
+          <div class="section-heading">
+            <div>
+              <p class="step-label">02 <span>·</span> Vos compétences linguistiques</p>
+              <h2 id="languages-title">Langues</h2>
+            </div>
+            <span class="section-icon" aria-hidden="true">文</span>
+          </div>
+          <p class="section-description">Ajoutez vos langues et niveaux. Un niveau B1 à C2 ou un test TOEFL/TOEIC valide le critère linguistique.</p>
+          <div id="language-list" class="language-list"></div>
+          <button id="add-language" class="button-secondary add-language-button" type="button">+ Ajouter une langue</button>
+        </section>
+
+        <section class="panel optional-details-panel" aria-labelledby="optional-details-title">
+          <div class="section-heading">
+            <div>
+              <p class="step-label">Informations complémentaires</p>
+              <h2 id="optional-details-title">Certifications et expérience</h2>
+            </div>
+            <span class="section-icon" aria-hidden="true">＋</span>
+          </div>
+          <p class="section-description">Ces informations sont facultatives. Elles apparaîtront dans le résumé de l’analyse sans modifier le score ATS.</p>
+
+          <div class="optional-details-grid">
+            <div>
+              <h3 class="optional-subheading">Certifications</h3>
+              <div id="certification-list" class="certification-list"></div>
+              <button id="add-certification" class="button-secondary add-language-button" type="button">+ Ajouter une certification</button>
+            </div>
+            <div>
+              <label class="field-label" for="experience-duration">Durée d’expérience</label>
+              <select id="experience-duration" name="experience-duration" class="experience-select">
+                <option value="">Sélectionnez une durée (facultatif)</option>
+                <option value="Aucune expérience">Aucune expérience</option>
+                <option value="Moins de 6 mois">Moins de 6 mois</option>
+                <option value="6 mois à 1 an">6 mois à 1 an</option>
+                <option value="1 à 2 ans">1 à 2 ans</option>
+                <option value="2 à 5 ans">2 à 5 ans</option>
+                <option value="5 ans ou plus">5 ans ou plus</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <fieldset class="review-mode">
+          <legend>Choisissez le mode d’évaluation</legend>
+          <label class="mode-option">
+            <input type="radio" name="review-mode" value="manual" checked>
+            <span><strong>Évaluation avec liste de contrôle</strong><small>Inclut les critères visuels et de mise en page dans le score.</small></span>
+          </label>
+          <label class="mode-option">
+            <input type="radio" name="review-mode" value="automatic">
+            <span><strong>Évaluation automatique du texte</strong><small>Ignore la liste de contrôle et évalue uniquement les critères vérifiables dans le texte du CV.</small></span>
+          </label>
+        </fieldset>
+
+        <section id="checklist-panel" class="panel checklist-panel" aria-labelledby="checklist-title">
+          <div class="section-heading">
+            <div>
+              <p class="step-label">03 <span>·</span> Les éléments invisibles dans le texte</p>
+              <h2 id="checklist-title">Liste de contrôle visuelle et mise en page</h2>
+            </div>
+            <span class="section-icon" aria-hidden="true">☑</span>
+          </div>
+          <p class="section-description">Cochez les critères qui correspondent à votre CV. Ces éléments visuels et contextuels sont évalués par vos soins.</p>
+
+          <div class="rubric-grid">
+            <fieldset class="rubric-group">
+              <legend><span class="group-letter">A</span><span>Lisibilité ATS</span><strong>25 pts</strong></legend>
+              <label class="check-row"><input type="checkbox" name="score" data-category="readability" value="8"><span>Le texte suit un ordre de lecture logique</span><b>8</b></label>
+              <label class="check-row"><input type="checkbox" name="score" data-category="readability" value="7"><span>Une seule colonne, sans tableau, zone de texte ni icône</span><b>7</b></label>
+              <label class="check-row"><input type="checkbox" name="score" data-category="readability" value="4"><span>Les coordonnées figurent dans le corps du document</span><b>4</b></label>
+              <label class="check-row"><input type="checkbox" name="score" data-category="readability" value="3"><span>Format .pdf ou .docx et nom de fichier clair</span><b>3</b></label>
+              <label class="check-row"><input type="checkbox" name="score" data-category="readability" value="3"><span>Police standard et taille lisible</span><b>3</b></label>
+            </fieldset>
+
+            <fieldset class="rubric-group">
+              <legend><span class="group-letter">B</span><span>Structure</span><strong>15 pts</strong></legend>
+              <label class="check-row"><input type="checkbox" name="score" data-category="structure" value="5"><span>Les rubriques utilisent des titres standards</span><b>5</b></label>
+              <label class="check-row"><input type="checkbox" name="score" data-category="structure" value="5"><span>Les dates indiquent mois et année dans un format cohérent</span><b>5</b></label>
+              <label class="check-row"><input type="checkbox" name="score" data-category="structure" value="5"><span>Chaque expérience indique poste, employeur, ville et dates</span><b>5</b></label>
+            </fieldset>
+
+            <fieldset class="rubric-group">
+              <legend><span class="group-letter">C</span><span>Mots-clés</span><strong>20 pts</strong></legend>
+              <div class="auto-row"><span>L’intitulé exact du poste figure dans le CV</span><b>5 pts</b><span class="auto-tag">Auto</span></div>
+              <div class="auto-row"><span>Correspondance des mots-clés de l’offre</span><b>10 pts</b><span class="auto-tag">Auto</span></div>
+              <label class="check-row"><input type="checkbox" name="score" data-category="keywords" value="5"><span>Les acronymes sont définis lors de leur première utilisation</span><b>5</b></label>
+              <p class="group-note">Le score est calculé au prorata des termes pertinents et uniques de l’offre.</p>
+            </fieldset>
+
+            <fieldset class="rubric-group">
+              <legend><span class="group-letter">D</span><span>Contenu</span><strong>25 pts</strong></legend>
+              <div class="auto-row"><span>Un résumé clair figure en haut du CV</span><b>5 pts</b><span class="auto-tag">Auto</span></div>
+              <div class="auto-row"><span>Le CV utilise des verbes d’action</span><b>5 pts</b><span class="auto-tag">Auto</span></div>
+              <div class="auto-row"><span>Le CV présente des chiffres ou pourcentages</span><b>8 pts</b><span class="auto-tag">Auto</span></div>
+              <label class="check-row"><input type="checkbox" name="score" data-category="content" value="4"><span>Les stages ou projets décrivent des résultats concrets</span><b>4</b></label>
+              <div class="auto-row"><span>Un niveau de langue est indiqué (B1–C2, TOEFL, TOEIC)</span><b>3 pts</b><span class="auto-tag">Auto</span></div>
+            </fieldset>
+
+            <fieldset class="rubric-group">
+              <legend><span class="group-letter">E</span><span>Adaptation au pays</span><strong>10 pts</strong></legend>
+              <label class="check-row"><input type="checkbox" name="score" data-category="country" value="5"><span>Les données personnelles respectent les lois et usages locaux</span><b>5</b></label>
+              <label class="check-row"><input type="checkbox" name="score" data-category="country" value="5"><span>La longueur, la langue et le statut professionnel sont adaptés</span><b>5</b></label>
+            </fieldset>
+
+            <fieldset class="rubric-group spelling-group">
+              <legend><span class="group-letter">F</span><span>Orthographe et grammaire</span><strong>5 pts</strong></legend>
+              <label class="radio-row"><input type="radio" name="spelling" value="5"><span>Aucune faute</span><b>5</b></label>
+              <label class="radio-row"><input type="radio" name="spelling" value="3"><span>1 à 2 fautes</span><b>3</b></label>
+              <label class="radio-row"><input type="radio" name="spelling" value="0"><span>3 fautes ou plus</span><b>0</b></label>
+            </fieldset>
+          </div>
+        </section>
+
+        <div class="form-actions">
+          <p>Prêt ? Le score est calculé instantanément dans votre navigateur.</p>
+          <button class="calculate-button" type="submit">Calculer mon score <span aria-hidden="true">→</span></button>
+        </div>
+      </form>
+
+      <section id="results" class="panel results-panel" aria-labelledby="results-title" aria-live="polite" hidden>
+        <div class="results-top">
+          <div>
+            <p class="step-label">04 <span>·</span> Votre résultat</p>
+            <h2 id="results-title">Compatibilité ATS</h2>
+            <p id="candidate-result-name" class="candidate-result-name"></p>
+            <p id="results-message" class="results-message"></p>
+          </div>
+          <div class="score-badge"><span id="score-value">0</span><span class="score-total">/ 100</span></div>
+        </div>
+        <div class="progress-track" role="progressbar" aria-label="Score de compatibilité ATS" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <p id="score-note" class="score-note"></p>
+        <section class="keyword-results" aria-labelledby="keyword-results-title">
+          <div class="keyword-heading">
+            <h3 id="keyword-results-title">Mots-clés de l’offre</h3>
+            <span id="keyword-summary"></span>
+          </div>
+          <div class="keyword-columns">
+            <div>
+              <h4>Trouvés dans le CV</h4>
+              <ul id="matched-keywords" class="keyword-list"></ul>
+            </div>
+            <div>
+              <h4>Non trouvés</h4>
+              <ul id="missing-keywords" class="keyword-list"></ul>
+            </div>
+          </div>
+        </section>
+        <div class="results-columns">
+          <div>
+            <h3>Détail du score</h3>
+            <ul id="score-breakdown" class="score-breakdown"></ul>
+          </div>
+          <div>
+            <h3>Pistes pour améliorer votre CV</h3>
+            <ul id="feedback-list" class="feedback-list"></ul>
+          </div>
+        </div>
+        <section id="additional-results" class="additional-results" hidden>
+          <h3>Informations complémentaires</h3>
+          <p id="experience-result"></p>
+          <ul id="certification-results" class="certification-results"></ul>
+        </section>
+        <div class="save-profile-actions">
+          <button id="save-profile" class="button-secondary" type="button">Enregistrer ce profil</button>
+          <p id="save-profile-status" class="profile-status" role="status" aria-live="polite"></p>
+        </div>
+        <p class="disclaimer">Cette évaluation est indicative et ne garantit pas le classement de votre CV par un logiciel ATS.</p>
+      </section>
+
+      <section id="saved-profiles" class="panel saved-profiles" aria-labelledby="saved-profiles-title" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="step-label">Historique local</p>
+            <h2 id="saved-profiles-title">Profils enregistrés</h2>
+          </div>
+          <span class="section-icon" aria-hidden="true">▤</span>
+        </div>
+        <p class="section-description">Les profils sont enregistrés uniquement dans ce navigateur. Le texte du CV n’est jamais sauvegardé.</p>
+        <p id="profiles-storage-status" class="profile-status" role="status" aria-live="polite"></p>
+        <ul id="saved-profile-list" class="saved-profile-list"></ul>
+        <div class="comparison-actions">
+          <button id="compare-profiles" class="button-secondary" type="button" disabled>Comparer les profils sélectionnés</button>
+          <span id="comparison-status" class="profile-status" role="status" aria-live="polite">Sélectionnez au moins deux profils.</span>
+        </div>
+        <div id="comparison-result" class="comparison-result" hidden>
+          <h3>Comparaison des profils</h3>
+          <div class="comparison-table-wrap">
+            <table class="comparison-table">
+              <thead id="comparison-head"></thead>
+              <tbody id="comparison-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <footer class="page-footer">Pour des candidatures soignées <span aria-hidden="true">·</span> Vos données ne quittent pas cette page</footer>
+    </main>
+  </body>
+</html>
